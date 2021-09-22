@@ -40,7 +40,7 @@ int main() {
         },
     };
 
-    Result result = ForwardPropogate(network, input);
+    Result result = ForwardPropagate(network, input);
 
     for (size_t layerIndex = 0; layerIndex < network->m_NumLayers; layerIndex++) {
         for (size_t nodeIndex = 0; nodeIndex < network->m_NodeLayers[layerIndex].m_Size; nodeIndex++) {
