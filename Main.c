@@ -13,7 +13,7 @@ int main() {
      * I2->B = 1.0
      * A->O = 1.0
      * B->O = 1.0
-     * 
+     *
      *   I1 - A \
      *      X    O
      *   I2 - B /
@@ -21,16 +21,16 @@ int main() {
 
      // Manually assign the network's synapse weights to make a simple XOR network
      // Node A
-    network->m_NodeLayers[1].m_Nodes[0].m_Synapses[0].m_Weight = 10.0;
-    network->m_NodeLayers[1].m_Nodes[0].m_Synapses[1].m_Weight = -10.0;
+    network->m_NodeLayers[1].m_Nodes[0].m_Synapses[0].m_Weight = 1.0;
+    network->m_NodeLayers[1].m_Nodes[0].m_Synapses[1].m_Weight = -1.0;
 
     // Node B
-    network->m_NodeLayers[1].m_Nodes[1].m_Synapses[0].m_Weight = -10.0;
-    network->m_NodeLayers[1].m_Nodes[1].m_Synapses[1].m_Weight = 10.0;
+    network->m_NodeLayers[1].m_Nodes[1].m_Synapses[0].m_Weight = -1.0;
+    network->m_NodeLayers[1].m_Nodes[1].m_Synapses[1].m_Weight = 1.0;
 
     // Final output node
-    network->m_NodeLayers[2].m_Nodes[0].m_Synapses[0].m_Weight = 10.0;
-    network->m_NodeLayers[2].m_Nodes[0].m_Synapses[1].m_Weight = 10.0;
+    network->m_NodeLayers[2].m_Nodes[0].m_Synapses[0].m_Weight = 1.0;
+    network->m_NodeLayers[2].m_Nodes[0].m_Synapses[1].m_Weight = 1.0;
 
     Input input = {
         .m_Size = 2,
@@ -46,7 +46,7 @@ int main() {
         for (size_t nodeIndex = 0; nodeIndex < network->m_NodeLayers[layerIndex].m_Size; nodeIndex++) {
             Node node = network->m_NodeLayers[layerIndex].m_Nodes[nodeIndex];
             printf("\tNode %llu %llu: %.4lf\n", layerIndex, nodeIndex, node.m_Value);
-            // Print synapses 
+            // Print synapses
             for (size_t synIndex = 0; synIndex < node.m_SynapseCount; synIndex++) {
                 printf("\t\tSynapse %llu: %.4lf\n", synIndex, node.m_Synapses[synIndex].m_Weight);
             }

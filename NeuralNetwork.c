@@ -31,6 +31,10 @@ NodeValue Sigmoid(NodeValue x) {
     return 1.0 / (1.0 + exp(-x));
 }
 
+NodeValue Relu(NodeValue x) {
+    return fmax(x, 0.0);
+}
+
 // Define the network's structure, allocate all memory and get a usable struct
 // e.g. CreateNetwork(3, {2, 3, 1});
 Network* CreateNetwork(u32 numLayers, u32* layerSizes) {
@@ -131,7 +135,7 @@ Result ForwardPropagate(Network* network, Input input) {
             }
 
             // "Activate" node value
-            currentNode->m_Value = Sigmoid(currentNode->m_Value);
+            currentNode->m_Value = Relu(currentNode->m_Value);
         }
     }
 
@@ -148,5 +152,5 @@ Result ForwardPropagate(Network* network, Input input) {
 
 // Learn
 void BackPropagate(Network* network, Input input, Result result) {
-    // (´⊙ω⊙`)!!! oh god 
+    // (´⊙ω⊙`)!!! oh god
 }
