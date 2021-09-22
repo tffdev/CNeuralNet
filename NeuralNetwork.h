@@ -48,5 +48,5 @@ typedef Result Input;
 Network* CreateNetwork(u32 numLayers, u32* layerSizes);
 void FreeNetwork(Network* network);
 Network* AllocateNetwork(u32 numLayers, u32* layerSizes);
-Result ForwardPropogate(Network* network, Input input);
-void BackPropogate(Network* network, Input input, Result result);
+Result ForwardPropagate(Network* network, Input input);
+void BackPropagate(Network* network, Input input, Result result);

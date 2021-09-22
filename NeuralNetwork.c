@@ -104,7 +104,7 @@ void FreeNetwork(Network* network) {
 }
 
 // Simple input/output, forward pass
-Result ForwardPropogate(Network* network, Input input) {
+Result ForwardPropagate(Network* network, Input input) {
     // Make sure input size is same as network first layer
     if (input.m_Size != network->m_NodeLayers[0].m_Size) {
         perror("Input size is not the same size as the first layer of nodes in this network.\n");
@@ -116,7 +116,7 @@ Result ForwardPropogate(Network* network, Input input) {
         network->m_NodeLayers[0].m_Nodes[i].m_Value = input.m_Values[i];
     }
 
-    // Forward propoagate throughout network
+    // Forward propagate throughout network
     for (size_t layerIndex = 1; layerIndex < network->m_NumLayers; layerIndex++) {
         NodeLayer previousLayer = network->m_NodeLayers[layerIndex - 1];
         NodeLayer layer = network->m_NodeLayers[layerIndex];
@@ -147,6 +147,6 @@ Result ForwardPropogate(Network* network, Input input) {
 }
 
 // Learn
-void BackPropogate(Network* network, Input input, Result result) {
+void BackPropagate(Network* network, Input input, Result result) {
     // (´⊙ω⊙`)!!! oh god 
 }
