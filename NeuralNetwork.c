@@ -7,6 +7,8 @@ Result const c_EMPTY_RESULT = {
     .m_Values = { 0 }
 };
 
+/* Internal memory helpers
+/*----------------------------*/
 void* MemoryBufferMalloc(MemoryBuffer* buffer, u32 allocSizeInBytes) {
     if (buffer->m_UsedSize + allocSizeInBytes > buffer->m_MaxSize) {
         printf("MEMORY OVERFLOW! What to heck\n");
@@ -27,6 +29,8 @@ MemoryBuffer MemoryBufferCreate(u32 size) {
     return newMemBuffer;
 }
 
+/* Activation functions 
+/*----------------------------*/
 NodeValue Sigmoid(NodeValue x) {
     return 1.0 / (1.0 + exp(-x));
 }
@@ -35,11 +39,15 @@ NodeValue Relu(NodeValue x) {
     return fmax(x, 0.0);
 }
 
+/* Network library
+/*----------------------------*/
 // Define the network's structure, allocate all memory and get a usable struct
 // e.g. CreateNetwork(3, {2, 3, 1});
-Network* CreateNetwork(u32 numLayers, u32* layerSizes) {
-    Network* network = AllocateNetwork(numLayers, layerSizes);
-
+Network* CreateNetwork(NetworkSettings* settings) {
+    Network* network = AllocateNetwork(settings->m_Size, settings->m_LayerSizes);
+    
+    network->m_ActivationFunction = settings->m_ActivationFunction;
+    
     // Extra network initialisation here
 
     return network;
@@ -135,7 +143,15 @@ Result ForwardPropagate(Network* network, Input input) {
             }
 
             // "Activate" node value
-            currentNode->m_Value = Relu(currentNode->m_Value);
+            switch (network->m_ActivationFunction) {
+            case ACTIVATION_FUNCTION_RELU: 
+                currentNode->m_Value = Relu(currentNode->m_Value);
+                break;
+            case ACTIVATION_FUNCTION_SIGMOID:
+                currentNode->m_Value = Sigmoid(currentNode->m_Value);
+                break;
+            default: break;
+            }
         }
     }
 
@@ -148,6 +164,10 @@ Result ForwardPropagate(Network* network, Input input) {
     }
 
     return result;
+}
+
+void SetSynapseWeight(Network* network, u32 layer, u32 node, u32 synapse, Weight weight) {
+    network->m_NodeLayers[layer].m_Nodes[node].m_Synapses[synapse].m_Weight = weight;
 }
 
 // Learn
