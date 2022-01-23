@@ -7,3 +7,5 @@ add_custom_target(run
     DEPENDS NeuralNet
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
+
+add_compile_options(-O3)

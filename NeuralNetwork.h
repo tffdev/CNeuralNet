@@ -13,11 +13,6 @@ typedef u32 bool;
 typedef f64 Weight;
 typedef f64 NodeValue;
 
-const enum ActivationFunction {
-	ACTIVATION_FUNCTION_RELU,
-	ACTIVATION_FUNCTION_SIGMOID
-};
-
 typedef struct {
 	char* m_Memory;
 	u32 m_UsedSize;
@@ -26,6 +21,7 @@ typedef struct {
 
 typedef struct {
 	Weight m_Weight;
+	Weight m_Delta;
 } Synapse;
 
 typedef struct {
@@ -33,6 +29,7 @@ typedef struct {
 	u32 m_SynapseCount; 
 	Synapse* m_Synapses;
 	NodeValue m_Value;
+	NodeValue m_PreActivatedValue;
 } Node;
 
 typedef struct {
@@ -41,32 +38,32 @@ typedef struct {
 } NodeLayer;
 
 typedef struct {
+	f64 m_Momentum;
+	f64 m_LearningRate;
 	u32 m_NumLayers;
 	MemoryBuffer m_Memory;
 	NodeLayer* m_NodeLayers;
-	enum ActivationFunction m_ActivationFunction;
 } Network;
 
 typedef struct {
 	u32 m_Size;
 	NodeValue m_Values[MAX_NODES_PER_LAYER]; // Alloc max num of node values! Just so we can stack-allocate results & inputs
-} Result;
+} NodeBuffer;
 
 typedef struct {
 	u32 m_Size;
 	u32 m_LayerSizes[MAX_NUM_LAYERS];
-	// Insert activation function
 	f64 m_LearningRate;
 	f64 m_Momentum;
-	enum ActivationFunction m_ActivationFunction;
 } NetworkSettings;
 
 
-typedef Result Input;
+typedef NodeBuffer Input;
+typedef NodeBuffer Result;
 
-Network* CreateNetwork(NetworkSettings* settings);
-void FreeNetwork(Network* network);
-Network* AllocateNetwork(u32 numLayers, u32* layerSizes);
-Result ForwardPropagate(Network* network, Input input);
-void BackPropagate(Network* network, Input input, Result result);
-void SetSynapseWeight(Network* network, u32 layer, u32 node, u32 synapse, Weight weight);
+Network* LNN_CreateNetwork(NetworkSettings* settings);
+void LNN_FreeNetwork(Network* network);
+Network* LNN_AllocateNetwork(u32 numLayers, u32* layerSizes);
+Result LNN_ForwardPropagate(Network* network, Input input);
+f64 LNN_Learn(Network* network, Input input, Result expectedResult);
+void LNN_SetSynapseWeight(Network* network, u32 layer, u32 node, u32 synapse, Weight weight);

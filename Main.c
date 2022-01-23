@@ -1,84 +1,67 @@
 #include <stdio.h>
 #include <stdarg.h>
-
 #include "NeuralNetwork.h"
 
-Input NewInput(int size, ...)
-{
-    va_list ptr;
-    va_start(ptr, size);
-
-    Input input = { .m_Size = 0, .m_Values = {0} };
-    input.m_Size = size;
-
-    for (int i = 0; i < size; i++) {
-        input.m_Values[i] = va_arg(ptr, NodeValue);
-    }
-
-    va_end(ptr);
-    return input;
-}
-
-void PrintNetwork(Network* network) {
-    for (size_t layerIndex = 0; layerIndex < network->m_NumLayers; layerIndex++) {
-        for (size_t nodeIndex = 0; nodeIndex < network->m_NodeLayers[layerIndex].m_Size; nodeIndex++) {
-            Node node = network->m_NodeLayers[layerIndex].m_Nodes[nodeIndex];
-            printf("\tNode %llu %llu: %.4lf\n", layerIndex, nodeIndex, node.m_Value);
-            // Print synapses
-            for (size_t synIndex = 0; synIndex < node.m_SynapseCount; synIndex++) {
-                printf("\t\tSynapse %llu: %.4lf\n", synIndex, node.m_Synapses[synIndex].m_Weight);
-            }
-        }
-    }
-}
-
-void PrintResult(Result* result) {
-    printf("Result:\n");
-    for (size_t i = 0; i < result->m_Size; i++) {
-        printf("\t%llu: %.3lf\n", i, result->m_Values[i]);
-    }
+bool FloatClose(NodeValue input, NodeValue desired, NodeValue epsilon) {
+    NodeValue val = (input - desired);
+    if (val < 0.0f) val = -val;
+    return val < epsilon;
 }
 
 int main() {
     NetworkSettings settings = {
-        .m_Size = 3,
-        .m_LayerSizes = {2,2,1},
-        .m_LearningRate = 0.01,
-        .m_Momentum = 0.1,
-        .m_ActivationFunction = ACTIVATION_FUNCTION_RELU
+        .m_Size = 5,
+        .m_LayerSizes = {2,10,10,10,1},
+        .m_LearningRate = 0.2,
+        .m_Momentum = 0.05,
     };
-    Network* network = CreateNetwork(&settings);
+    Network* network = LNN_CreateNetwork(&settings);
 
-    /*
-     * I1->A = 1.0
-     * I2->A = -1.0
-     * I1->B = -1.0
-     * I2->B = 1.0
-     * A->O = 1.0
-     * B->O = 1.0
-     *
-     *   I1 - A \
-     *      X    O
-     *   I2 - B /
-     */
+    Input inputA = { .m_Size = 2, .m_Values = { 0.0, 0.0 } };
+    Input inputB = { .m_Size = 2, .m_Values = { 1.0, 0.0 } };
+    Input inputC = { .m_Size = 2, .m_Values = { 0.0, 1.0 } };
+    Input inputD = { .m_Size = 2, .m_Values = { 1.0, 1.0 } };
+    Result outputA = { .m_Size = 1, .m_Values = { 0.0 } };
+    Result outputB = { .m_Size = 1, .m_Values = { 1.0 } };
+    Result outputC = { .m_Size = 1, .m_Values = { 1.0 } };
+    Result outputD = { .m_Size = 1, .m_Values = { 0.0 } };
 
-     // Manually assign the network's synapse weights to make a simple XOR network
-     // Node A
-    SetSynapseWeight(network, 1, 0, 0, 1.0);
-    SetSynapseWeight(network, 1, 0, 1, -1.0);
+    printf("Beginning learning...\n");
 
-    // Node B
-    SetSynapseWeight(network, 1, 1, 0, -1.0);
-    SetSynapseWeight(network, 1, 1, 1, 1.0);
+    // Learn a little
+    f64 e = 0.0;
+    f64 c = 0.0;
+    for (size_t i = 0; i < 100000; i++)
+    {
+        e += LNN_Learn(network, inputA, outputA);
+        e += LNN_Learn(network, inputB, outputB);
+        e += LNN_Learn(network, inputC, outputC);
+        e += LNN_Learn(network, inputD, outputD);
+        c += 4.0;
+        if (i % 10000 == 0) {
+            printf("Error: %f\n", e / c);
+            e = 0.0;
+            c = 0.0;
+        }
+    }
 
-    // Final output node
-    SetSynapseWeight(network, 2, 0, 0, 1.0);
-    SetSynapseWeight(network, 2, 0, 1, 1.0);
+    printf("%f, %f -> %f\n", inputA.m_Values[0], inputA.m_Values[1], LNN_ForwardPropagate(network, inputA).m_Values[0]);
+    printf("%f, %f -> %f\n", inputB.m_Values[0], inputB.m_Values[1], LNN_ForwardPropagate(network, inputB).m_Values[0]);
+    printf("%f, %f -> %f\n", inputC.m_Values[0], inputC.m_Values[1], LNN_ForwardPropagate(network, inputC).m_Values[0]);
+    printf("%f, %f -> %f\n", inputD.m_Values[0], inputD.m_Values[1], LNN_ForwardPropagate(network, inputD).m_Values[0]);
 
-    Input input = NewInput(2, 1.0, 0.0);
-    Result result = ForwardPropagate(network, input);
-    PrintNetwork(network);
-    PrintResult(&result);
+    bool successful =
+        FloatClose(LNN_ForwardPropagate(network, inputA).m_Values[0], outputA.m_Values[0], 0.1) &&
+        FloatClose(LNN_ForwardPropagate(network, inputB).m_Values[0], outputB.m_Values[0], 0.1) &&
+        FloatClose(LNN_ForwardPropagate(network, inputC).m_Values[0], outputC.m_Values[0], 0.1) &&
+        FloatClose(LNN_ForwardPropagate(network, inputD).m_Values[0], outputD.m_Values[0], 0.1);
 
-    FreeNetwork(network);
+    if (successful) {
+        printf("\x1b[32mTests pass! :D\x1b[0m\n");
+    }
+    else {
+        printf("\x1b[31mTests fail! :(\x1b[0m\n");
+    }
+
+    LNN_FreeNetwork(network);
 }
