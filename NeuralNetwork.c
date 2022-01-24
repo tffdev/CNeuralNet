@@ -199,7 +199,7 @@ void BackpropagateHiddenLayer(Network* network, Input input, Result expectedResu
             for (size_t k = 0; k < forwardLayer.m_Size; k++)
             {
                 assert(nodeIndex < forwardLayer.m_Nodes[k].m_SynapseCount);
-                weightedSumInfluence += forwardLayer.m_Nodes[k].m_Synapses[nodeIndex].m_Delta;
+                weightedSumInfluence += forwardLayer.m_Nodes[k].m_Synapses[nodeIndex].m_Delta * forwardLayer.m_Nodes[k].m_Synapses[nodeIndex].m_Weight;
             }
 
             f64 c0aL = (weightedSumInfluence / (f64)forwardLayer.m_Size);
