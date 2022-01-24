@@ -10,10 +10,10 @@ bool FloatClose(NodeValue input, NodeValue desired, NodeValue epsilon) {
 
 int main() {
     NetworkSettings settings = {
-        .m_Size = 5,
-        .m_LayerSizes = {2,10,10,10,1},
-        .m_LearningRate = 0.2,
-        .m_Momentum = 0.05,
+        .m_Size = 3,
+        .m_LayerSizes = {2,5,1},
+        .m_LearningRate = 0.4,
+        .m_Momentum = 0.0,
     };
     Network* network = LNN_CreateNetwork(&settings);
 
@@ -28,27 +28,29 @@ int main() {
 
     printf("Beginning learning...\n");
 
-    // Learn a little
     f64 e = 0.0;
     f64 c = 0.0;
-    for (size_t i = 0; i < 100000; i++)
+    u32 numIterations = 50000;
+    for (size_t i = 0; i < numIterations; i++)
     {
         e += LNN_Learn(network, inputA, outputA);
         e += LNN_Learn(network, inputB, outputB);
         e += LNN_Learn(network, inputC, outputC);
         e += LNN_Learn(network, inputD, outputD);
         c += 4.0;
-        if (i % 10000 == 0) {
+        if (i % (numIterations/10) == 0) {
             printf("Error: %f\n", e / c);
             e = 0.0;
             c = 0.0;
         }
     }
 
-    printf("%f, %f -> %f\n", inputA.m_Values[0], inputA.m_Values[1], LNN_ForwardPropagate(network, inputA).m_Values[0]);
-    printf("%f, %f -> %f\n", inputB.m_Values[0], inputB.m_Values[1], LNN_ForwardPropagate(network, inputB).m_Values[0]);
-    printf("%f, %f -> %f\n", inputC.m_Values[0], inputC.m_Values[1], LNN_ForwardPropagate(network, inputC).m_Values[0]);
-    printf("%f, %f -> %f\n", inputD.m_Values[0], inputD.m_Values[1], LNN_ForwardPropagate(network, inputD).m_Values[0]);
+    printf("%f, %f -> %f\n%f, %f -> %f\n%f, %f -> %f\n%f, %f -> %f\n", 
+        inputA.m_Values[0], inputA.m_Values[1], LNN_ForwardPropagate(network, inputA).m_Values[0],
+        inputB.m_Values[0], inputB.m_Values[1], LNN_ForwardPropagate(network, inputB).m_Values[0],
+        inputC.m_Values[0], inputC.m_Values[1], LNN_ForwardPropagate(network, inputC).m_Values[0],
+        inputD.m_Values[0], inputD.m_Values[1], LNN_ForwardPropagate(network, inputD).m_Values[0]
+    );
 
     bool successful =
         FloatClose(LNN_ForwardPropagate(network, inputA).m_Values[0], outputA.m_Values[0], 0.1) &&
